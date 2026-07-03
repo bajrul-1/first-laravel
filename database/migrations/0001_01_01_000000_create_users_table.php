@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+
+            $table->foreignId('company_id')->nullable()->constrained('companies')->onDelete('cascade');
+            $table->enum('role', ['super_admin', 'company_admin', 'worker', 'salesman'])->default('company_admin');
+
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
