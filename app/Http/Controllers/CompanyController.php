@@ -7,6 +7,12 @@ use Illuminate\Support\Facades\DB; //database insert kora hoyacha
 
 class CompanyController extends Controller
 {
+    public function index(){
+        return view('companies.index', [
+            'companies' => getAllCompany()
+        ]);
+    }
+        //  
     //compony add korar jonno page t dakhanor jonno
     public function create(){
         return view('companies.create');
@@ -32,6 +38,6 @@ class CompanyController extends Controller
         ]);
 
         //data save hobaer por akti success message soho dashbord a back korba.
-        return redirect('/')->with('success', $request->name . ' has been successfully registered!');
+        return redirect('/')->with('success', $request->name . ' has been registered successfully!');
     }
 }
