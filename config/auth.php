@@ -43,6 +43,11 @@ return [
             'provider' => 'users',
         ],
     ],
+    // 🚀 ওনারদের জন্য নতুন কাস্টম সেশন গার্ড
+    'owner' => [
+        'driver' => 'session',
+        'provider' => 'owners',
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -67,10 +72,11 @@ return [
             'model' => env('AUTH_MODEL', User::class),
         ],
 
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
+        // 🚀 ওনার মডেলের জন্য এলকোয়েন্ট প্রোভাইডার
+    'owners' => [
+        'driver' => 'eloquent',
+        'model' => App\Models\Owner::class,
+    ],
     ],
 
     /*

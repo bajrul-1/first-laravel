@@ -35,4 +35,33 @@ if(!function_exists('checkIsAdminCreated')){
     }
 }
 
+if (!function_exists('redirectBasedOnCompanyAndRole')) {
+    /**
+     * 🌐 Global Company and Role-based Redirect Helper
+     *
+     * @param \App\Models\User|null $user
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    function redirectBasedOnCompanyAndRole($user = null){
+        $user = $user ?? Auth::user();
+
+        if (!$user) {
+            return redirect('/login');
+        }
+        $companySlug = $user->company_slug;
+
+        if ($user->role === 'owner') {
+            return redirect()->to("/{$companySlug}/dashboard");
+        } 
+        if ($user->role === 'manager') {
+            return redirect()->to("/{$companySlug}/manager");
+        } 
+        if ($user->role === 'employee') {
+            return redirect()->to("/{$companySlug}/employee");
+        }
+        Auth::logout();
+        return redirect('/login')->with('error', 'Unauthorized node access.');
+    }
+}
+
 

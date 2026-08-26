@@ -1,28 +1,42 @@
 <?php
 
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\CompanyController;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\SuperAdminController;
+use App\Http\Controllers\Auth\OwnerLoginController;
+use App\Http\Controllers\OwnerDashboardController;
+use App\Http\Controllers\Owner\EmployeeController;
+use App\Http\Controllers\Owner\ProductController;
 use Illuminate\Support\Facades\Route;
 
+// 🚀 Home Route Redirect to Owner Login
+Route::get('/', function () {
+    return redirect()->route('owner.login');
+});
 
-//Home route no login requird
-Route::get('/', [HomeController::class, 'index']);
-Route::get('/login', [HomeController::class, 'loginPage'])->name('login');
-Route::post('/login/verify', [LoginController::class, 'authenticate'])->name('login.verify');
+// 🔒 Owner Authentication Routes
+Route::get('/owner/login', [OwnerLoginController::class, 'showLoginForm'])->name('owner.login');
+Route::post('/owner/login', [OwnerLoginController::class, 'login']);
+Route::post('/owner/logout', [OwnerLoginController::class, 'logout'])->name('owner.logout');
 
-Route::post('/company/generate-access/{id}', [SuperAdminController::class, 'generateAccess']);
-Route::get('/company/edit/{id}', [SuperAdminController::class, 'editCompany']);
-Route::post('/company/update/{id}', [SuperAdminController::class, 'updateCompany']);
-Route::get('company/suspend/{id}', [SuperAdminController::class, 'suspendCompany']);
+// 🏢 Multi-Tenant Owner Dashboard Protected Node
+Route::prefix('{company_slug}')->group(function () {
+    
+    // 📊 Dashboard
+    Route::get('/dashboard', [OwnerDashboardController::class, 'dashboard'])->name('company.owner.dashboard');
+    
+    // 👥 Employee Management
+    Route::get('/employees', [EmployeeController::class, 'index'])->name('company.owner.employees.index');
+    Route::get('/employees/create', [EmployeeController::class, 'create'])->name('company.owner.employees.create');
+    Route::post('/employees', [EmployeeController::class, 'store'])->name('company.owner.employees.store');
 
-Route::get('/companies', [SuperAdminController::class, 'companyIndex']);
-Route::get('/company/manage/{id}', [SuperAdminController::class, 'manageCompany']);
+    // 📦 Product Management (Static Routes First)
+    Route::get('/products', [ProductController::class, 'index'])->name('company.owner.products.index');
+    Route::get('/products/create', [ProductController::class, 'create'])->name('company.owner.products.create');
+    Route::post('/products/create', [ProductController::class, 'store'])->name('company.owner.products.store');
 
-
-
-//company toyri korar form dakhar route
-Route::get('/company/create', [CompanyController::class, 'create']);
-//form submit korar por data save korar route (POST Request)
-Route::post('/company/store', [CompanyController::class, 'store']);
+    // 🏷️ Product Management (Dynamic ID Routes Afterwards)
+    Route::get('/products/{id}', [ProductController::class, 'show'])->name('company.owner.products.show');
+    Route::get('/products/{id}/edit', [ProductController::class, 'edit'])->name('company.owner.products.edit');
+    Route::put('/products/{id}', [ProductController::class, 'update'])->name('company.owner.products.update');
+    Route::get('/products/{id}/print-barcode', [ProductController::class, 'printBarcode'])->name('company.owner.products.print-barcode');
+    Route::delete('/products/{id}', [ProductController::class, 'destroy'])->name('company.owner.products.destroy');
+    Route::delete('/products/{id}/images/{image_id}', [ProductController::class, 'destroyImage'])->name('company.owner.products.images.destroy');
+});
