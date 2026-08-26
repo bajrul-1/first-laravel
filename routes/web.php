@@ -39,4 +39,10 @@ Route::prefix('{company_slug}')->group(function () {
     Route::get('/products/{id}/print-barcode', [ProductController::class, 'printBarcode'])->name('company.owner.products.print-barcode');
     Route::delete('/products/{id}', [ProductController::class, 'destroy'])->name('company.owner.products.destroy');
     Route::delete('/products/{id}/images/{image_id}', [ProductController::class, 'destroyImage'])->name('company.owner.products.images.destroy');
+
+    //akhana ki commend lekhbo?
+    
+    Route::get('/pos/{type?}', function ($company_slug, $type = 'customer') {
+    return view('owner.pos.index', compact('company_slug', 'type'));
+})->name('company.owner.pos.index');
 });
