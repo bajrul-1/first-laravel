@@ -37,16 +37,28 @@ return [
     |
     */
 
-    'guards' => [
+'guards' => [
         'web' => [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        'owner' => [
+            'driver' => 'session',
+            'provider' => 'owners',
+        ],
     ],
-    // 🚀 ওনারদের জন্য নতুন কাস্টম সেশন গার্ড
-    'owner' => [
-        'driver' => 'session',
-        'provider' => 'owners',
+
+    'providers' => [
+        'users' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\User::class,
+        ],
+
+        'owners' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Owner::class,
+        ],
     ],
 
     /*

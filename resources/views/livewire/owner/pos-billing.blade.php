@@ -264,7 +264,8 @@
                                     <option value="">-- Choose Wholesaler / Retailer --</option>
                                     @foreach ($wholesalersList as $wh)
                                         <option value="{{ $wh->id }}">{{ $wh->name }}
-                                            ({{ $wh->email ?? 'N/A' }})</option>
+                                            ({{ $wh->email ?? 'N/A' }})
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>
@@ -279,7 +280,8 @@
                                     <option value="">-- Choose Salesman Staff --</option>
                                     @foreach ($salesmenList as $sm)
                                         <option value="{{ $sm->id }}">{{ $sm->name }}
-                                            ({{ $sm->email ?? 'N/A' }})</option>
+                                            ({{ $sm->email ?? 'N/A' }})
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>
@@ -500,6 +502,65 @@
                     <span class="text-muted small">Cart Items: <strong>{{ count($cart) }}</strong></span>
                     <button type="button" wire:click="closeCatalog" class="btn btn-dark btn-sm fw-bold px-4">
                         Done / Close
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    @endif
+
+    <!-- ========================================================= -->
+    <!-- 🧾 BILL SUCCESS & PRINT RECEIPT POPUP MODAL -->
+    <!-- ========================================================= -->
+    @if ($showReceiptModal && $lastSavedSale)
+        <div class="modal-backdrop-custom d-flex align-items-center justify-content-center">
+            <div class="modal-dialog-custom bg-white rounded-3 shadow-lg d-flex flex-column"
+                style="max-width: 480px; height: auto;">
+
+                <div class="p-3 bg-success text-white rounded-top-3 d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-circle-check fs-4"></i>
+                        <h5 class="fw-bold m-0">Bill Completed!</h5>
+                    </div>
+                    <button type="button" wire:click="closeReceiptModal" class="btn-close btn-close-white"></button>
+                </div>
+
+                <div class="p-3 text-center border-bottom bg-light">
+                    <h6 class="fw-bold text-dark m-0">{{ $lastSavedSale->invoice_no }}</h6>
+                    <small class="text-muted">Buyer: {{ $lastSavedSale->customer_name }}
+                        ({{ ucfirst($lastSavedSale->customer_type) }})</small>
+                    <div class="fs-4 fw-bold text-success mt-1">₹{{ number_format($lastSavedSale->grand_total, 2) }}
+                    </div>
+                </div>
+
+                <div class="p-3 overflow-auto" style="max-height: 220px;">
+                    <table class="table table-sm align-middle small m-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Item</th>
+                                <th class="text-center">Qty</th>
+                                <th class="text-end">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($lastSavedSale->items as $it)
+                                <tr>
+                                    <td>{{ $it->product->product_name ?? 'N/A' }}</td>
+                                    <td class="text-center">{{ $it->quantity }}</td>
+                                    <td class="text-end fw-bold">₹{{ number_format($it->subtotal, 2) }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="p-3 bg-light border-top rounded-bottom-3 d-flex gap-2">
+                    <a href="{{ route('company.owner.pos.print', ['company_slug' => $company_slug, 'id' => $lastSavedSale->id]) }}"
+                        target="_blank" class="btn btn-primary fw-bold flex-grow-1">
+                        <i class="fa-solid fa-print me-1"></i> Print Receipt
+                    </a>
+                    <button type="button" wire:click="closeReceiptModal" class="btn btn-dark fw-bold px-3">
+                        + New Sale
                     </button>
                 </div>
 

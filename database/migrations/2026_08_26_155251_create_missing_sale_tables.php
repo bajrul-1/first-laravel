@@ -8,25 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // 1. Sales Master Table
-        if (!Schema::hasTable('sales')) {
-            Schema::create('sales', function (Blueprint $table) {
-                $table->id();
-                $table->foreignId('company_id')->constrained()->onDelete('cascade');
-                $table->string('invoice_no')->unique();
-                $table->enum('customer_type', ['customer', 'retailer', 'salesman'])->default('customer');
-                $table->string('customer_name')->nullable();
-                $table->string('customer_phone')->nullable();
-                $table->decimal('grand_total', 10, 2)->default(0);
-                $table->decimal('paid_total', 10, 2)->default(0);
-                $table->decimal('due_amount', 10, 2)->default(0);
-                $table->enum('payment_status', ['paid', 'partial', 'unpaid'])->default('paid');
-                $table->enum('status', ['active', 'cancelled'])->default('active');
-                $table->timestamps();
-            });
-        }
-
-        // 2. Sale Items Table
+        // 1. Sale Items Table
         if (!Schema::hasTable('sale_items')) {
             Schema::create('sale_items', function (Blueprint $table) {
                 $table->id();
@@ -39,7 +21,7 @@ return new class extends Migration
             });
         }
 
-        // 3. Sale Payments Breakdown Table
+        // 2. Sale Payments Breakdown Table
         if (!Schema::hasTable('sale_payments')) {
             Schema::create('sale_payments', function (Blueprint $table) {
                 $table->id();
@@ -55,6 +37,5 @@ return new class extends Migration
     {
         Schema::dropIfExists('sale_payments');
         Schema::dropIfExists('sale_items');
-        Schema::dropIfExists('sales');
     }
 };

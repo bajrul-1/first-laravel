@@ -11,38 +11,50 @@ class OwnerLoginController extends Controller
     // ১. ওনার লগইন পেজের ভিউ দেখানো
     public function showLoginForm()
     {
+        if (Auth::guard('owner')->check() && Auth::guard('owner')->user()->company) {
+            return redirect('/' . Auth::guard('owner')->user()->company->company_slug . '/dashboard');
+        }
+
         return view('auth.owner-login');
     }
 
-    // ২. ওনার লগইন রিকোয়েস্ট প্রসেস করা
+    // ২. ওনার লগইন রিকোয়েস্ট প্রসেস করা
     public function login(Request $request)
     {
-        // ইনপুট ভ্যালিডেশন
         $request->validate([
             'email'    => 'required|email',
             'password' => 'required|string|min:6',
         ]);
 
-        // 🚀 কাস্টম 'owner' গার্ড ব্যবহার করে লগইন চেষ্টা করা
         $credentials = $request->only('email', 'password');
         
+        // 🚀 'owner' গার্ড দিয়ে owners টেবিলে লগইন চেক
         if (Auth::guard('owner')->attempt($credentials, $request->filled('remember'))) {
-            // লগইন সফল হলে ওনারের কোম্পানির স্ল্যাগ বের করে ড্যাশবোর্ডে পাঠানো
-            $companySlug = Auth::guard('owner')->user()->company->company_slug;
-            
-            return redirect()->intended('/' . $companySlug . '/dashboard');
+            $request->session()->regenerate();
+
+            $owner = Auth::guard('owner')->user();
+
+            if ($owner->company) {
+                return redirect()->intended('/' . $owner->company->company_slug . '/dashboard');
+            }
+
+            Auth::guard('owner')->logout();
+            return back()->withErrors([
+                'email' => 'No active company found for this owner account.',
+            ]);
         }
 
-        // লগইন ব্যর্থ হলে এরর ব্যাক করা
         return back()->withErrors([
             'email' => 'The provided credentials do not match our owner records.',
         ])->withInput($request->only('email', 'remember'));
     }
 
     // ৩. ওনার লগআউট মেকানিজম
-    public function logout()
+    public function logout(Request $request)
     {
         Auth::guard('owner')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
         return redirect()->route('owner.login');
     }
 }

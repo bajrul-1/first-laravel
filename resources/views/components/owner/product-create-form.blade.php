@@ -15,6 +15,20 @@
         </h5>
 
         <div class="row g-3 mb-4">
+
+            <div class="form-group mb-3">
+                <label for="barcode">Barcode (Scan external product or leave empty to auto-generate)</label>
+                <div class="input-group">
+                    <input type="text" id="barcode" wire:model="barcode" class="form-control"
+                        placeholder="Scanner input will appear here..." readonly>
+                    <button type="button" class="btn btn-outline-secondary" id="start-camera-btn"
+                        onclick="startCameraScanner()">
+                        Use Camera
+                    </button>
+                </div>
+                <!-- Camera feed container -->
+                <div id="reader" style="width: 100%; max-width: 400px; display: none; margin-top: 10px;"></div>
+            </div>
             <!-- Product Name -->
             <div class="col-12 col-md-6">
                 <label class="form-label fw-semibold small">Product Name <span class="text-danger">*</span></label>
@@ -208,3 +222,82 @@
         </div>
     </form>
 </div>
+
+<!-- Include Html5-Qrcode library from CDN -->
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<script>
+    let scanner = null;
+
+    // Optimized for realistic POS Laser Scanner Beep
+    function playPosBeep() {
+        try {
+            let context = new(window.AudioContext || window.webkitAudioContext)();
+            let oscillator = context.createOscillator();
+            let gainNode = context.createGain();
+
+            // 'square' wave provides the sharp, mechanical sound of a real scanner
+            oscillator.type = 'square';
+            oscillator.frequency.setValueAtTime(1500, context.currentTime); // High pitch
+
+            gainNode.gain.setValueAtTime(0.2, context.currentTime); // Volume control
+            gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.08); // Ultra-fast sound drop
+
+            oscillator.connect(gainNode);
+            gainNode.connect(context.destination);
+
+            oscillator.start();
+            oscillator.stop(context.currentTime + 0.08); // 80 milliseconds duration
+        } catch (error) {
+            console.error("Audio API error", error);
+        }
+    }
+
+    function startCameraScanner() {
+        let btn = document.getElementById('start-camera-btn');
+        let reader = document.getElementById('reader');
+
+        btn.style.display = 'none';
+        reader.style.display = 'block';
+
+        if (scanner) {
+            scanner.clear();
+        }
+
+        // Optimized settings for instant scanning and tilted barcodes
+        scanner = new Html5QrcodeScanner(
+            "reader", {
+                fps: 30, // Increased from 10 to 30 frames per second for instant detection
+                // Removed qrbox completely. The scanner now uses the entire camera frame.
+                // This allows scanning even if the barcode is angled or at the edge of the screen.
+                formatsToSupport: [
+                    Html5QrcodeSupportedFormats.EAN_13,
+                    Html5QrcodeSupportedFormats.CODE_128,
+                    Html5QrcodeSupportedFormats.UPC_A,
+                    Html5QrcodeSupportedFormats.EAN_8
+                ]
+            },
+            false
+        );
+
+        scanner.render(function(decodedText) {
+            // Play realistic POS beep
+            playPosBeep();
+
+            scanner.clear().then(() => {
+                scanner = null;
+                reader.style.display = 'none';
+
+                btn.style.display = 'inline-block';
+                btn.innerText = 'Scan Again';
+
+                let barcodeInput = document.getElementById('barcode');
+                barcodeInput.value = decodedText;
+                barcodeInput.dispatchEvent(new Event('input'));
+            });
+
+        }, function(error) {
+            // Ignored to prevent console spam during fast continuous scanning
+        });
+    }
+</script>

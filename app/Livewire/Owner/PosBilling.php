@@ -320,13 +320,28 @@ class PosBilling extends Component
 
             DB::commit();
 
-            session()->flash('sale_success', "Bill #{$sale->invoice_no} completed successfully!");
+            // 🚀 বিল সেভ হওয়ার সাথে সাথে রিসিপ্ট অবজেক্ট লোড হবে
+            $this->lastSavedSale = Sale::with(['items.product', 'payments'])->find($sale->id);
+            $this->showReceiptModal = true;
+
             $this->reset(['cart', 'customer_phone', 'customer_name', 'discount', 'cash_paid', 'online_paid', 'current_due', 'previous_due', 'search_query', 'selected_user_id']);
 
         } catch (\Exception $e) {
             DB::rollBack();
             session()->flash('scan_error', 'Billing error: ' . $e->getMessage());
         }
+
+        
+    }
+
+    // নতুন প্রোপার্টি যোগ করুন
+    public $lastSavedSale = null;
+    public $showReceiptModal = false;
+
+    public function closeReceiptModal()
+    {
+        $this->showReceiptModal = false;
+        $this->lastSavedSale = null;
     }
 
     public function render()

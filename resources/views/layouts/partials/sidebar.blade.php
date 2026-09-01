@@ -123,5 +123,14 @@
             <span class="badge bg-success small px-1.5 py-0.5" style="font-size: 0.65rem;">LIVE</span>
         </a>
 
+        <a href="{{ route('company.owner.sales.index', $company_slug) }}"
+            class="list-group-item list-group-item-action bg-dark text-white border-0 rounded-2 py-2 px-3 mb-1 d-flex align-items-center justify-content-between @if (Route::is('company.owner.sales.*')) bg-primary active @endif"
+            title="Sales History">
+            <div class="d-flex align-items-center">
+                <i class="fa-solid fa-file-invoice-dollar fs-5" style="width: 25px;"></i>
+                <span class="sidebar-text ms-2">Sales History</span>
+            </div>
+        </a>
+
     </div>
 </div>

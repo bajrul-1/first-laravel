@@ -13,7 +13,6 @@ class SalePayment extends Model
         'sale_id',
         'payment_method',
         'amount',
-        'transaction_reference',
     ];
 
     public function sale()
